@@ -1,0 +1,139 @@
+body{
+    font-family: "Poppins", sans-serif;
+    left:2%;
+    padding-left: 5%;
+    overflow-x: hidden;
+    margin: 0px;
+    background-image: url("developer-portfolio/top-banner.png");
+    background-repeat: no-repeat;
+   
+    
+
+
+}
+
+
+.welcome{
+    color: orange;
+}
+.jaber{
+    color: rgb(109, 182, 119);
+}
+.tittle-paragraph{
+    width: 40%;
+    float: left;
+    height: 10%;
+
+}
+.dmgray{
+    color: dimgray;
+}
+.web-dev{
+    color: brown;
+}
+.hire-me{
+    color: white;
+    background-color: orange;
+    border-radius: 5px;
+    border: 1px solid orange;
+    padding: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    background-image: linear-gradient(45deg,lightsalmon,tomato );
+    
+}
+.image img{
+      width: 35%;
+      transform: translateX(60%);
+      
+   
+}
+
+.tittle-programe-2 img{
+    width:100%;
+    
+   
+
+}
+.banner-2nd{
+    transform: translateX(-5%);
+    padding-top:200px ;
+    width: 100%;
+}
+.tittle-programe-2{
+    width: 40%;
+    left: 40%;
+    float: left;
+   
+}
+
+
+.dream-website{
+    width:40%;
+    float: left;
+    margin-left: 15%;
+    margin-top: 5%;
+}
+.dream-website-for-color{
+    color: olivedrab;
+   
+}
+
+.download-here{
+    text-decoration: none;
+    background-color: orange;
+    color:white;
+    border-radius: 5px;
+    padding: 7px;
+    background-image: linear-gradient(45deg,lightsalmon,tomato);
+    font-weight: 700;
+
+}
+.circle-image{
+    transform: translate(59%,20%);
+    
+ 
+}
+.las-2box {
+    margin-top: 300px;
+    margin-bottom: 700px;
+    justify-content: space-between;
+   
+    
+}
+.half-width {
+   width: 40%;
+   
+   
+   float: left;
+   padding: 50px;
+   
+}
+.fukstack{
+    color:orange;
+}
+
+.sadow{
+    box-shadow: 5px 5px 40px gray;
+    margin: 10px;
+    border-radius: 5px;
+    height: 200px;
+}
+.bg{
+transform: translate(-160px,-250px);
+}
+#first-border{
+    border-left: 7px solid;
+    border-image: linear-gradient(180deg,lightsalmon,tomato) ;
+    border-image-slice: 1;
+    
+}
+#second-border{
+    border-left: 7px solid;
+    border-image: linear-gradient(180deg,blue , cyan );
+    border-image-slice: 1;
+}
+footer{
+    text-align: center;
+
+}
