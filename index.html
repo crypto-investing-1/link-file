@@ -7,259 +7,73 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         :root {
-            /* TradingView-inspired dark theme colors */
-            --bg-body: #131722; /* Dark background */
-            --bg-card: #1e222d; /* Card background */
-            --bg-input: #2a2e39; /* Input background */
-            --text-main: #d1d4dc; /* Main text */
-            --text-muted: #787b86; /* Muted text */
-            --primary: #f0b90b; /* ASTER accent color */
-            --success: #26a69a; /* TradingView green */
-            --danger: #ef5350; /* TradingView red */
-            --border: #363c4e; /* Grid/border color */
+            --bg-body: #131722;
+            --bg-card: #1e222d;
+            --bg-input: #2a2e39;
+            --text-main: #d1d4dc;
+            --text-muted: #787b86;
+            --primary: #f0b90b;
+            --success: #26a69a;
+            --danger: #ef5350;
+            --border: #363c4e;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 
-        .container {
-            display: flex;
-            gap: 20px;
-            max-width: 1400px;
-            width: 100%;
-            flex-wrap: wrap;
-        }
+        .container { display: flex; gap: 20px; max-width: 1400px; width: 100%; flex-wrap: wrap; }
 
-        /* Sidebar Style */
-        .sidebar {
-            flex: 1;
-            min-width: 320px;
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: 4px; /* More angular TradingView style */
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .sidebar { flex: 1; min-width: 320px; background: var(--bg-card); padding: 25px; border-radius: 4px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; }
 
-        .coin-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .coin-info { display: flex; align-items: center; gap: 15px; }
 
-        .coin-logo {
-            width: 45px;
-            height: 45px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: black;
-            font-size: 20px;
-        }
+        .coin-logo { width: 45px; height: 45px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; font-size: 20px; }
 
-        .price-display h2 {
-            font-size: 36px;
-            color: var(--primary);
-            margin: 5px 0;
-            transition: color 0.3s ease;
-        }
+        .price-display h2 { font-size: 36px; color: var(--primary); margin: 5px 0; transition: color 0.3s ease; }
 
-        .label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-        .balance-card {
-            background: var(--bg-input);
-            padding: 15px;
-            border-radius: 4px;
-        }
+        .balance-card { background: var(--bg-input); padding: 15px; border-radius: 4px; }
 
-        .balance-row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 13px;
-        }
+        .balance-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 2px;
-            font-size: 11px;
-            font-weight: bold;
-        }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 2px; font-size: 11px; font-weight: bold; min-width: 80px; text-align: center; }
 
         .up { color: var(--success); background: rgba(38, 166, 154, 0.1); }
         .down { color: var(--danger); background: rgba(239, 83, 80, 0.1); }
 
-        /* Trade Options Section */
-        .trade-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
+        .trade-options { display: flex; flex-direction: column; gap: 10px; }
 
-        .trade-input-group {
-            display: flex;
-            background: var(--bg-input);
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-        
-        .trade-input-group:focus-within {
-            border-color: var(--text-muted);
-        }
+        .trade-input-group { display: flex; background: var(--bg-input); border-radius: 4px; border: 1px solid var(--border); }
 
-        .trade-input-group input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            padding: 12px;
-            font-size: 14px;
-            outline: none;
-        }
+        .trade-input-group input { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 12px; outline: none; }
 
-        .trade-input-group .unit {
-            padding: 12px;
-            color: var(--text-muted);
-            font-size: 13px;
-            background: rgba(0,0,0,0.1);
-        }
+        .trade-input-group .unit { padding: 12px; color: var(--text-muted); font-size: 13px; }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
+        .btn-group { display: flex; gap: 10px; }
 
-        button {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.1s;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
+        button { flex: 1; padding: 14px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px; text-transform: uppercase; }
 
         .btn-buy { background: var(--success); color: white; }
         .btn-sell { background: var(--danger); color: white; }
-        button:hover { opacity: 0.9; }
-        button:active { transform: translateY(1px); }
 
-        /* Main Content Area */
-        .main-content {
-            flex: 2.5;
-            min-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .main-content { flex: 2.5; min-width: 500px; display: flex; flex-direction: column; gap: 20px; }
 
-        .chart-box, .history-box {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-        }
+        .chart-box, .history-box { background: var(--bg-card); padding: 20px; border-radius: 4px; border: 1px solid var(--border); }
 
-        .box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
+        .box-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
 
-        .box-header h3 {
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: normal;
-        }
+        #chart { width: 100%; height: 480px; border-top: 1px solid var(--border); }
 
-        #chart {
-            width: 100%;
-            height: 480px; /* Increased height for professional feel */
-            border-top: 1px solid var(--border); /* Inner border like TradingView */
-        }
-
-        /* History Table Style */
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .history-table th, .history-table td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .history-table th {
-            color: var(--text-muted);
-            font-weight: normal;
-            text-transform: uppercase;
-            font-size: 11px;
-        }
-
-        .history-table tr:last-child td {
-            border-bottom: none;
-        }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .history-table th, .history-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+        .history-table th { color: var(--text-muted); text-transform: uppercase; font-size: 11px; }
 
         .type-buy { color: var(--success); font-weight: bold; }
         .type-sell { color: var(--danger); font-weight: bold; }
 
-        /* Notification Popup */
-        #notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--bg-card);
-            padding: 15px 25px;
-            border-radius: 4px;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            display: none;
-            z-index: 1000;
-            animation: slideIn 0.3s ease-out;
-            font-size: 13px;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @media (max-width: 1000px) {
-            .container { flex-direction: column; }
-        }
+        #notification { position: fixed; top: 20px; right: 20px; background: var(--bg-card); padding: 15px 25px; border-radius: 4px; border-left: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -278,25 +92,19 @@
 
         <div class="price-display">
             <p class="label">Live Price (USD)</p>
-            <h2 id="current-price">$0.0202</h2>
+            <h2 id="current-price">$0.5000</h2>
         </div>
 
         <div class="balance-card">
             <p class="label">Your Assets</p>
-            <div class="balance-row">
-                <span>Amount:</span>
-                <strong id="balance-amount">250.00 AST</strong>
-            </div>
-            <div class="balance-row">
-                <span>Total Value:</span>
-                <strong id="total-value" style="color: var(--primary);">$0.00</strong>
-            </div>
+            <div class="balance-row"><span>Amount:</span> <strong id="balance-amount">417.98 AST</strong></div>
+            <div class="balance-row"><span>Total Value:</span> <strong id="total-value" style="color: var(--primary);">$0.00</strong></div>
         </div>
 
         <div class="trade-options">
             <p class="label">Quick Trade</p>
             <div class="trade-input-group">
-                <input type="number" id="trade-amount" placeholder="Enter amount" value="10">
+                <input type="number" id="trade-amount" value="10">
                 <span class="unit">AST</span>
             </div>
             <div class="btn-group">
@@ -309,221 +117,103 @@
     <div class="main-content">
         <div class="chart-box">
             <div class="box-header">
-                <h3>ASTER / USD <span style="font-size:10px;">Market (Live)</span></h3>
-                <span class="label" style="font-size:10px;">Range: $0.0202 - $0.384</span>
+                <h3>ASTER / USD <span style="font-size:10px;">Live Movement (1m Candle)</span></h3>
+                <span class="label" style="font-size:10px;">Range: $0.0235 - $3.948</span>
             </div>
             <div id="chart"></div>
         </div>
 
         <div class="history-box">
-            <div class="box-header">
-                <h3>Recent Trade History</h3>
-            </div>
+            <div class="box-header"><h3>Recent Trade History</h3></div>
             <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody id="history-log">
-                    </tbody>
+                <thead><tr><th>Time</th><th>Type</th><th>Amount</th><th>Price</th><th>Total</th></tr></thead>
+                <tbody id="history-log"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    // Configuration
-    const MIN_PRICE = 0.0202;
-    const MAX_PRICE = 0.384;
-    
-    // State
-    let myAmount = 250;
-    let currentLivePrice = MIN_PRICE;
+    const MIN_PRICE = 0.0235;
+    const MAX_PRICE = 3.948;
+    const UPDATE_INTERVAL = 1000; // 1 second update
+    const CANDLE_DURATION = 60000; // New candle every 1 minute
+
+    let myAmount = 417.98; 
+    let currentLivePrice = 0.50;
     let seriesData = [];
     let historyLog = [];
+    let currentCandle = null;
 
-    // Access computed CSS variables for JS
     const rootStyle = getComputedStyle(document.documentElement);
     const successColor = rootStyle.getPropertyValue('--success').trim();
     const dangerColor = rootStyle.getPropertyValue('--danger').trim();
     const textMuted = rootStyle.getPropertyValue('--text-muted').trim();
     const borderGrid = rootStyle.getPropertyValue('--border').trim();
 
-    // --- Chart Setup (ApexCharts) with TradingView-like customizations ---
-    const options = {
+    const chart = new ApexCharts(document.querySelector("#chart"), {
         series: [{ data: [] }],
         chart: {
             type: 'candlestick',
             height: 480,
-            toolbar: { show: false }, // Hide toolbar like professional charts
-            animations: { enabled: false },
+            toolbar: { show: false },
+            animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 800 } },
             background: 'transparent',
-            foreColor: textMuted // Default text color for the chart
+            foreColor: textMuted
         },
-        xaxis: { 
-            type: 'datetime', 
-            labels: { 
-                style: { colors: textMuted, fontSize: '11px' } 
-            },
-            axisBorder: { show: false },
-            axisTicks: { show: false }
-        },
+        xaxis: { type: 'datetime', labels: { style: { colors: textMuted } } },
         yaxis: { 
-            opposite: true, // IMPORTANT: Move Y-axis to the right
-            labels: { 
-                style: { colors: textMuted, fontSize: '11px' },
-                formatter: (val) => val.toFixed(3)
-            },
-            min: MIN_PRICE * 0.9,
-            max: MAX_PRICE * 1.1,
-            axisBorder: { show: false },
-            axisTicks: { show: false }
+            opposite: true, 
+            min: MIN_PRICE, max: MAX_PRICE,
+            labels: { formatter: (val) => val.toFixed(4), style: { colors: textMuted } } 
         },
-        grid: { borderColor: borderGrid, xaxis: { lines: { show: true } } },
-        plotOptions: {
-            candlestick: {
-                colors: { up: successColor, down: dangerColor }, // Use TradingView colors
-                wick: { useFillColor: true }
-            }
-        },
-        tooltip: {
-            theme: 'dark',
-            x: { format: 'MMM dd HH:mm:ss' }
-        },
-        // --- TradingView Annotations ---
-        annotations: {
-            xaxis: [
-                // Red vertical line and text like in the professional image
-                {
-                    x: new Date().getTime(),
-                    borderColor: dangerColor,
-                    strokeDashArray: [3, 2], // Dashed line
-                    label: {
-                        borderColor: dangerColor,
-                        style: { color: '#fff', background: dangerColor, fontSize: '10px', padding: [3, 5] },
-                        text: 'CHOK KEY'
-                    }
-                }
-            ],
-            points: [
-                // Adding 'QFL' label like in the professional image
-                {
-                    x: new Date().getTime(),
-                    y: (MIN_PRICE + MAX_PRICE) / 2, // Arbitrary middle point
-                    marker: { size: 0 },
-                    label: {
-                        borderColor: '#2196f3',
-                        style: { color: '#fff', background: '#2196f3', fontSize: '10px' },
-                        text: 'QFL',
-                        offsetY: -30
-                    }
-                }
-            ],
-            yaxis: [
-                // Adding the shaded Risk/Reward (Long Position) box like TradingView
-                {
-                    y: currentLivePrice * 1.05, // Top of green box
-                    y2: currentLivePrice, // Bottom of green box (entry)
-                    borderColor: 'transparent',
-                    fillColor: successColor,
-                    opacity: 0.1, // Very transparent like TradingView
-                    label: {
-                        style: { fontSize: '0px' }, // Hide label
-                        text: ''
-                    }
-                },
-                {
-                    y: currentLivePrice, // Top of red box (entry)
-                    y2: currentLivePrice * 0.95, // Bottom of red box (stop loss)
-                    borderColor: 'transparent',
-                    fillColor: dangerColor,
-                    opacity: 0.1, // Very transparent
-                    label: {
-                        style: { fontSize: '0px' },
-                        text: ''
-                    }
-                }
-            ]
-        }
-    };
-
-    const chart = new ApexCharts(document.querySelector("#chart"), options);
+        grid: { borderColor: borderGrid },
+        plotOptions: { candlestick: { colors: { up: successColor, down: dangerColor } } }
+    });
     chart.render();
 
-    // --- Core Logic: Price Update ---
-    function updateMarketData() {
+    function updateMarket() {
         const now = new Date().getTime();
-        
-        // Simulate OHLC values within range
-        let open = currentLivePrice;
-        let close = Math.random() * (MAX_PRICE - MIN_PRICE) + MIN_PRICE;
-        let high = Math.max(open, close) + (Math.random() * 0.012); // Slightly smaller wicks for professional look
-        let low = Math.min(open, close) - (Math.random() * 0.012);
-        
-        // Constraints
-        if (high > MAX_PRICE) high = MAX_PRICE;
-        if (low < MIN_PRICE) low = MIN_PRICE;
+        const candleTime = Math.floor(now / CANDLE_DURATION) * CANDLE_DURATION;
 
-        const newCandle = {
-            x: now,
-            y: [open.toFixed(4), high.toFixed(4), low.toFixed(4), close.toFixed(4)]
-        };
+        // Price random fluctuation logic
+        let volatility = 0.02; 
+        let change = (Math.random() - 0.5) * volatility;
+        let newPrice = parseFloat((currentLivePrice + change).toFixed(4));
 
-        seriesData.push(newCandle);
-        if (seriesData.length > 50) seriesData.shift(); // Keep more candles for a dense professional look
+        if (newPrice > MAX_PRICE) newPrice = MAX_PRICE;
+        if (newPrice < MIN_PRICE) newPrice = MIN_PRICE;
 
-        // Update the main series data
-        chart.updateSeries([{ data: seriesData }]);
+        if (!currentCandle || currentCandle.x !== candleTime) {
+            // Start a new 1-minute candle
+            currentCandle = {
+                x: candleTime,
+                y: [newPrice, newPrice, newPrice, newPrice] // O, H, L, C
+            };
+            seriesData.push(currentCandle);
+            if (seriesData.length > 50) seriesData.shift();
+        } else {
+            // Update the existing 1-minute candle (Live movement)
+            let [open, high, low, close] = currentCandle.y;
+            high = Math.max(high, newPrice);
+            low = Math.min(low, newPrice);
+            close = newPrice;
+            currentCandle.y = [open, high, low, close];
+        }
 
-        // We also need to update the annotations based on the new price
-        chart.updateOptions({
-            annotations: {
-                xaxis: [{
-                    ...options.annotations.xaxis[0],
-                    x: now
-                }],
-                points: [{
-                    ...options.annotations.points[0],
-                    x: now,
-                    y: close // Update QFL position to current price
-                }],
-                yaxis: [
-                    {
-                        ...options.annotations.yaxis[0],
-                        y: close * 1.05,
-                        y2: close
-                    },
-                    {
-                        ...options.annotations.yaxis[1],
-                        y: close,
-                        y2: close * 0.95
-                    }
-                ]
-            }
-        });
-
-        currentLivePrice = close; // Update global price state
-        updateUI(open, close);
+        currentLivePrice = newPrice;
+        chart.updateSeries([{ data: [...seriesData] }], false);
+        updateUI(currentCandle.y[0], newPrice);
     }
 
-    // --- UI Update ---
     function updateUI(open, close) {
-        const priceEl = document.getElementById('current-price');
+        document.getElementById('current-price').innerText = `$${close.toFixed(4)}`;
+        document.getElementById('total-value').innerText = `$${(close * myAmount).toFixed(2)}`;
+        document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
+
         const trendEl = document.getElementById('price-trend');
-        const totalEl = document.getElementById('total-value');
-        const balanceEl = document.getElementById('balance-amount');
-
-        // Update Price and Total Value
-        priceEl.innerText = `$${close.toFixed(4)}`;
-        totalEl.innerText = `$${(close * myAmount).toFixed(2)}`;
-        balanceEl.innerText = `${myAmount.toFixed(2)} AST`;
-
-        // Update Trend Badge and Price Color
+        const priceEl = document.getElementById('current-price');
+        
         if (close >= open) {
             trendEl.innerText = "▲ Bullish";
             trendEl.className = "status-badge up";
@@ -535,80 +225,52 @@
         }
     }
 
-    // --- Trade Execution ---
     function executeTrade(type) {
-        const amountInput = document.getElementById('trade-amount');
-        const amount = parseFloat(amountInput.value);
-
-        if (isNaN(amount) || amount <= 0) {
-            showNotification("⚠️ Please enter a valid amount.", dangerColor);
-            return;
-        }
-
+        const amount = parseFloat(document.getElementById('trade-amount').value);
+        if (isNaN(amount) || amount <= 0) return;
         if (type === 'SELL' && amount > myAmount) {
-            showNotification("⚠️ Insufficient AST balance!", dangerColor);
+            showNotification("⚠️ Insufficient balance!", dangerColor);
             return;
         }
 
-        // Process Trade
-        const price = currentLivePrice;
-        const totalCost = amount * price;
+        if (type === 'BUY') myAmount += amount;
+        else myAmount -= amount;
 
-        if (type === 'BUY') {
-            myAmount += amount;
-        } else {
-            myAmount -= amount;
-        }
-
-        // Add to History
-        const tradeRecord = {
+        const trade = {
             time: new Date().toLocaleTimeString(),
             type: type,
             amount: amount,
-            price: price.toFixed(4),
-            total: totalCost.toFixed(2)
+            price: currentLivePrice.toFixed(4),
+            total: (amount * currentLivePrice).toFixed(2)
         };
-        historyLog.unshift(tradeRecord); // Add to start of array
-        if(historyLog.length > 5) historyLog.pop(); // Keep last 5
+        historyLog.unshift(trade);
+        if(historyLog.length > 8) historyLog.pop();
 
         updateHistoryTable();
-        updateUI(price, price); // Instant update total value
-        showNotification(`✅ ${type} Order Executed: ${amount} AST @ $${price.toFixed(4)}`, type === 'BUY' ? successColor : dangerColor);
+        showNotification(`✅ ${type} Order Executed`, type === 'BUY' ? successColor : dangerColor);
     }
 
     function updateHistoryTable() {
-        const logBody = document.getElementById('history-log');
-        logBody.innerHTML = ''; // Clear existing
-
-        historyLog.forEach(trade => {
-            const row = `<tr>
-                <td>${trade.time}</td>
-                <td class="${trade.type === 'BUY' ? 'type-buy' : 'type-sell'}">${trade.type}</td>
-                <td>${trade.amount.toFixed(2)}</td>
-                <td>$${trade.price}</td>
-                <td>$${trade.total}</td>
-            </tr>`;
-            logBody.innerHTML += row;
-        });
+        document.getElementById('history-log').innerHTML = historyLog.map(t => `
+            <tr>
+                <td>${t.time}</td>
+                <td class="${t.type === 'BUY' ? 'type-buy' : 'type-sell'}">${t.type}</td>
+                <td>${t.amount}</td>
+                <td>$${t.price}</td>
+                <td>$${t.total}</td>
+            </tr>
+        `).join('');
     }
 
-    // --- Notification System ---
-    function showNotification(message, color) {
-        const notif = document.getElementById('notification');
-        notif.innerText = message;
-        notif.style.borderLeftColor = color;
-        notif.style.display = 'block';
-
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-            notif.style.display = 'none';
-        }, 3000);
+    function showNotification(msg, color) {
+        const n = document.getElementById('notification');
+        n.innerText = msg; n.style.borderLeftColor = color; n.style.display = 'block';
+        setTimeout(() => n.style.display = 'none', 2000);
     }
 
-    // --- Initialize ---
-    // Update market every 3 seconds (increased to show density over time)
-    setInterval(updateMarketData, 3000);
-    updateMarketData(); // Initial call
+    // Run every 1 second
+    setInterval(updateMarket, UPDATE_INTERVAL);
+    updateMarket();
 </script>
 
 </body>
