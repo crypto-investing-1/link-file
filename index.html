@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ASTER Crypto Live Pro Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
@@ -18,81 +18,69 @@
             --border: #363c4e;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Trebuchet MS', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Trebuchet MS', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-body); color: var(--text-main); min-height: 100vh; padding: 10px; display: block; }
+        .container { display: flex; gap: 15px; max-width: 1400px; margin: 0 auto; flex-direction: column; }
 
-        body { background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .sidebar { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; }
+        .coin-info { display: flex; align-items: center; gap: 12px; }
+        .coin-logo { width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; font-size: 18px; }
+        .price-display h2 { font-size: 30px; color: var(--text-main); margin: 5px 0; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-        .container { display: flex; gap: 20px; max-width: 1400px; width: 100%; flex-wrap: wrap; }
-
-        .sidebar { flex: 1; min-width: 320px; background: var(--bg-card); padding: 25px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; }
-
-        .coin-info { display: flex; align-items: center; gap: 15px; }
-
-        .coin-logo { width: 45px; height: 45px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; font-size: 20px; }
-
-        .price-display h2 { font-size: 38px; color: var(--text-main); margin: 5px 0; font-weight: bold; }
-
-        .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-        .balance-card { background: var(--bg-input); padding: 15px; border-radius: 6px; border: 1px solid var(--border); }
-
+        .balance-card { background: var(--bg-input); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
         .balance-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; }
 
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         .up { color: var(--success); background: rgba(0, 192, 118, 0.1); }
         .down { color: var(--danger); background: rgba(255, 64, 64, 0.1); }
 
         .trade-options { display: flex; flex-direction: column; gap: 10px; }
-
-        .trade-input-group { display: flex; background: var(--bg-input); border-radius: 4px; border: 1px solid var(--border); }
-
-        .trade-input-group input { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 12px; outline: none; font-size: 16px; }
-
-        .trade-input-group .unit { padding: 12px; color: var(--text-muted); font-size: 13px; }
+        .trade-input-group { display: flex; background: var(--bg-input); border-radius: 6px; border: 1px solid var(--border); overflow: hidden; }
+        .trade-input-group input { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 12px; outline: none; font-size: 16px; width: 100%; }
+        .trade-input-group .unit { padding: 12px; color: var(--text-muted); font-size: 13px; background: rgba(255,255,255,0.05); }
 
         .btn-group { display: flex; gap: 10px; }
-
-        button { flex: 1; padding: 14px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; text-transform: uppercase; }
-
+        button { flex: 1; padding: 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; text-transform: uppercase; }
         .btn-buy { background: var(--success); color: white; }
         .btn-sell { background: var(--danger); color: white; }
 
-        .main-content { flex: 2.5; min-width: 500px; display: flex; flex-direction: column; gap: 20px; }
+        .main-content { display: flex; flex-direction: column; gap: 15px; }
+        .chart-box, .history-box { background: var(--bg-card); padding: 15px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        .box-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        #chart { width: 100%; height: 350px !important; margin-left: -10px; }
 
-        .chart-box, .history-box { background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .history-table-container { overflow-x: auto; width: 100%; }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 400px; }
+        .history-table th, .history-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--border); }
 
-        .box-header { display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center; }
+        #notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 12px 20px; border-radius: 50px; border: 1px solid var(--primary); display: none; z-index: 1000; font-size: 13px; }
 
-        #chart { width: 100%; height: 450px; }
-
-        .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .history-table th, .history-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
-        .history-table th { color: var(--text-muted); text-transform: uppercase; font-size: 11px; }
-
-        .type-buy { color: var(--success); font-weight: bold; }
-        .type-sell { color: var(--danger); font-weight: bold; }
-
-        #notification { position: fixed; top: 20px; right: 20px; background: var(--bg-card); padding: 15px 25px; border-radius: 4px; border-left: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; z-index: 1000; }
+        @media (min-width: 992px) {
+            .container { flex-direction: row; align-items: flex-start; }
+            .sidebar { flex: 0 0 350px; position: sticky; top: 20px; }
+            .main-content { flex: 1; }
+            #chart { height: 450px !important; }
+        }
     </style>
 </head>
 <body>
 
-<div id="notification">Trade execution alert!</div>
+<div id="notification">Trade executed!</div>
 
 <div class="container">
     <div class="sidebar">
         <div class="coin-info">
             <div class="coin-logo">A</div>
             <div>
-                <h3 style="margin:0">ASTER <span style="color:var(--text-muted); font-size:14px;">(AST)</span></h3>
+                <h3 style="margin:0">ASTER <span style="color:var(--text-muted); font-size:13px;">(AST)</span></h3>
                 <div id="price-trend" class="status-badge up">Live Market</div>
             </div>
         </div>
 
         <div class="price-display">
             <p class="label">Live Price (USD)</p>
-            <h2 id="current-price">$4.2500</h2>
+            <h2 id="current-price">$5.0900</h2>
         </div>
 
         <div class="balance-card">
@@ -104,7 +92,7 @@
         <div class="trade-options">
             <p class="label">Quick Trade</p>
             <div class="trade-input-group">
-                <input type="number" id="trade-amount" value="10">
+                <input type="number" id="trade-amount" inputmode="decimal" value="10">
                 <span class="unit">AST</span>
             </div>
             <div class="btn-group">
@@ -112,60 +100,50 @@
                 <button class="btn-sell" onclick="executeTrade('SELL')">SELL</button>
             </div>
         </div>
+        <button onclick="resetData()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:10px; margin-top:5px;">Reset All Data</button>
     </div>
 
     <div class="main-content">
         <div class="chart-box">
             <div class="box-header">
-                <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted);">10s Candles</span></h3>
-                <span class="label" style="font-size:10px;">Range: $3.45 - $5.46</span>
+                <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
+                <span class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
         </div>
 
         <div class="history-box">
-            <div class="box-header"><h3>Recent Trade History</h3></div>
-            <table class="history-table">
-                <thead><tr><th>Time</th><th>Type</th><th>Amount</th><th>Price</th><th>Total</th></tr></thead>
-                <tbody id="history-log"></tbody>
-            </table>
+            <div class="box-header"><h3>Trade History</h3></div>
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead><tr><th>Time</th><th>Type</th><th>Amt</th><th>Price</th><th>Total</th></tr></thead>
+                    <tbody id="history-log"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const MIN_PRICE = 3.4500;
-    const MAX_PRICE = 5.4600;
-    const UPDATE_INTERVAL = 1000; // প্রতি সেকেন্ডে প্রাইস চেক
-    const CANDLE_DURATION = 10000; // **১০ সেকেন্ডের ক্যান্ডেল**
+    const MIN_PRICE = 5.0900;
+    const MAX_PRICE = 7.0900;
+    const CANDLE_DURATION = 10000; 
 
-    let myAmount = 417.98; // **আপনার দেওয়া অ্যামাউন্ট**
-    let currentLivePrice = 4.2500; 
-    let seriesData = [];
-    let historyLog = [];
-    let currentCandle = null;
+    let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 417.98;
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 5.0900;
+    let priceDirection = localStorage.getItem('ast_direction') || 'up'; 
+    let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
+    let historyLog = JSON.parse(localStorage.getItem('ast_history')) || [];
 
-    const rootStyle = getComputedStyle(document.documentElement);
     const successColor = '#00c076';
     const dangerColor = '#ff4040';
 
-    // Chart Setup
     const chart = new ApexCharts(document.querySelector("#chart"), {
-        series: [{ data: [] }],
-        chart: {
-            type: 'candlestick',
-            height: 450,
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 500 } },
-            background: 'transparent'
-        },
-        xaxis: { type: 'datetime', labels: { style: { colors: '#787b86' } } },
-        yaxis: { 
-            opposite: true, 
-            min: MIN_PRICE - 0.05, max: MAX_PRICE + 0.05,
-            labels: { formatter: (val) => val.toFixed(2), style: { colors: '#787b86' } } 
-        },
-        grid: { borderColor: '#363c4e' },
+        series: [{ data: seriesData }],
+        chart: { type: 'candlestick', height: '100%', toolbar: { show: false }, animations: { enabled: false }, background: 'transparent' },
+        xaxis: { type: 'datetime', labels: { style: { colors: '#787b86', fontSize: '10px' }, datetimeUTC: false }, axisBorder: { show: false } },
+        yaxis: { opposite: true, min: MIN_PRICE - 0.1, max: MAX_PRICE + 0.1, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
+        grid: { borderColor: '#363c4e', strokeDashArray: 4 },
         plotOptions: { candlestick: { colors: { up: successColor, down: dangerColor } } }
     });
     chart.render();
@@ -174,88 +152,87 @@
         const now = new Date().getTime();
         const candleTime = Math.floor(now / CANDLE_DURATION) * CANDLE_DURATION;
 
-        // **প্রাইস মুভমেন্ট লজিক (ন্যাচারাল)**
-        let volatility = 0.015; // মুভমেন্টের গতি
-        let change = (Math.random() - 0.48) * volatility; // ধীরে ধীরে বাড়ার প্রবণতা
-        let newPrice = parseFloat((currentLivePrice + change).toFixed(4));
+        // প্রাইস মুভমেন্ট লজিক: 0.0124 এর মতো র‍্যান্ডম সেন্ট সিস্টেম
+        // 'up' ট্রেন্ডে বাড়ার সম্ভাবনা ৭০%, কমার সম্ভাবনা ৩০% (যাতে গ্রাফ উপরের দিকেই যায়)
+        let movement = (Math.random() * 0.0150) + 0.0050; // র‍্যান্ডম 0.0050 থেকে 0.0200
+        
+        let isDip = Math.random() < 0.35; // ৩৫% সম্ভাবনা যে প্রাইস একটু কমবে (Fluctuation)
 
-        if (newPrice > MAX_PRICE) newPrice = MAX_PRICE - 0.02;
-        if (newPrice < MIN_PRICE) newPrice = MIN_PRICE + 0.02;
-
-        if (!currentCandle || currentCandle.x !== candleTime) {
-            // নতুন ১০ সেকেন্ডের ক্যান্ডেল শুরু
-            currentCandle = {
-                x: candleTime,
-                y: [currentLivePrice, currentLivePrice, currentLivePrice, newPrice] // O, H, L, C
-            };
-            seriesData.push(currentCandle);
-            if (seriesData.length > 30) seriesData.shift();
+        if (priceDirection === 'up') {
+            if (isDip) currentLivePrice -= (movement * 0.6); // সামান্য ডিপ
+            else currentLivePrice += movement; // বড় জাম্প
+            
+            if (currentLivePrice >= MAX_PRICE) priceDirection = 'down';
         } else {
-            // বর্তমান ক্যান্ডেল আপডেট
-            let [open, high, low, close] = currentCandle.y;
-            high = Math.max(high, newPrice);
-            low = Math.min(low, newPrice);
-            close = newPrice;
-            currentCandle.y = [open, high, low, close];
+            // Down trend এও কিছুটা ফ্লাকচুয়েশন থাকবে
+            if (isDip) currentLivePrice += (movement * 0.6);
+            else currentLivePrice -= movement;
+            
+            if (currentLivePrice <= MIN_PRICE) priceDirection = 'up';
         }
 
-        currentLivePrice = newPrice;
-        chart.updateSeries([{ data: [...seriesData] }], false);
-        updateUI(currentCandle.y[0], newPrice);
+        // ক্যান্ডেলস্টিক ডাটা ম্যানেজমেন্ট
+        let lastCandle = seriesData[seriesData.length - 1];
+        if (!lastCandle || lastCandle.x !== candleTime) {
+            seriesData.push({ x: candleTime, y: [currentLivePrice, currentLivePrice, currentLivePrice, currentLivePrice] });
+            if (seriesData.length > 40) seriesData.shift(); 
+        } else {
+            let y = lastCandle.y;
+            y[1] = Math.max(y[1], currentLivePrice); // High
+            y[2] = Math.min(y[2], currentLivePrice); // Low
+            y[3] = currentLivePrice; // Close
+        }
+
+        localStorage.setItem('ast_last_price', currentLivePrice);
+        localStorage.setItem('ast_direction', priceDirection);
+        localStorage.setItem('ast_series', JSON.stringify(seriesData));
+
+        chart.updateSeries([{ data: seriesData }], false);
+        updateUI();
     }
 
-    function updateUI(open, close) {
-        document.getElementById('current-price').innerText = `$${close.toFixed(4)}`;
-        
-        // **ডলার ভ্যালু ক্যালকুলেশন (AST Amount * Current Price)**
-        const totalUsdValue = (close * myAmount).toFixed(2);
-        document.getElementById('total-value').innerText = `$${totalUsdValue}`;
+    function updateUI() {
+        document.getElementById('current-price').innerText = `$${currentLivePrice.toFixed(4)}`;
+        document.getElementById('total-value').innerText = `$${(currentLivePrice * myAmount).toFixed(2)}`;
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
 
         const trendEl = document.getElementById('price-trend');
-        const priceEl = document.getElementById('current-price');
-        
-        if (close >= open) {
-            trendEl.innerText = "▲ Bullish";
-            trendEl.className = "status-badge up";
-            priceEl.style.color = successColor;
-        } else {
-            trendEl.innerText = "▼ Bearish";
-            trendEl.className = "status-badge down";
-            priceEl.style.color = dangerColor;
-        }
+        trendEl.innerText = priceDirection === 'up' ? "▲ Bullish" : "▼ Bearish";
+        trendEl.className = `status-badge ${priceDirection === 'up' ? 'up' : 'down'}`;
+        document.getElementById('current-price').style.color = priceDirection === 'up' ? successColor : dangerColor;
     }
 
     function executeTrade(type) {
         const amount = parseFloat(document.getElementById('trade-amount').value);
         if (isNaN(amount) || amount <= 0) return;
-        if (type === 'SELL' && amount > myAmount) {
-            showNotification("⚠️ Insufficient balance!", dangerColor);
-            return;
-        }
+        if (type === 'SELL' && amount > myAmount) { showNotification("⚠️ Insufficient balance!"); return; }
 
-        if (type === 'BUY') myAmount += amount;
-        else myAmount -= amount;
+        myAmount = type === 'BUY' ? myAmount + amount : myAmount - amount;
 
         const trade = {
-            time: new Date().toLocaleTimeString(),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
             type: type,
             amount: amount,
             price: currentLivePrice.toFixed(4),
             total: (amount * currentLivePrice).toFixed(2)
         };
+        
         historyLog.unshift(trade);
-        if(historyLog.length > 5) historyLog.pop();
+        if(historyLog.length > 10) historyLog.pop();
+
+        localStorage.setItem('ast_balance', myAmount);
+        localStorage.setItem('ast_history', JSON.stringify(historyLog));
 
         updateHistoryTable();
-        showNotification(`✅ ${type} Order Executed`, type === 'BUY' ? successColor : dangerColor);
+        updateUI();
+        showNotification(`✅ ${type} Order Successful`);
     }
 
     function updateHistoryTable() {
         document.getElementById('history-log').innerHTML = historyLog.map(t => `
             <tr>
                 <td>${t.time}</td>
-                <td class="${t.type === 'BUY' ? 'type-buy' : 'type-sell'}">${t.type}</td>
+                <td style="color:${t.type==='BUY'?successColor:dangerColor}; font-weight:bold">${t.type}</td>
                 <td>${t.amount}</td>
                 <td>$${t.price}</td>
                 <td>$${t.total}</td>
@@ -263,14 +240,19 @@
         `).join('');
     }
 
-    function showNotification(msg, color) {
+    function showNotification(msg) {
         const n = document.getElementById('notification');
-        n.innerText = msg; n.style.borderLeftColor = color; n.style.display = 'block';
+        n.innerText = msg; n.style.display = 'block';
         setTimeout(() => n.style.display = 'none', 2000);
     }
 
-    setInterval(updateMarket, UPDATE_INTERVAL);
-    updateMarket();
+    function resetData() {
+        if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
+    }
+
+    updateHistoryTable();
+    updateUI();
+    setInterval(updateMarket, 1000); // প্রতি সেকেন্ডে মুভমেন্ট
 </script>
 
 </body>
