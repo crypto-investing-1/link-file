@@ -54,6 +54,10 @@
         .history-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 400px; }
         .history-table th, .history-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--border); }
 
+        /* Footer Info Style */
+        .binance-info { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 10px; letter-spacing: 0.5px; border-top: 1px solid var(--border); padding-top: 10px; }
+        .dot { height: 6px; width: 6px; background-color: var(--success); border-radius: 50%; display: inline-block; margin-right: 4px; }
+
         #notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 12px 20px; border-radius: 50px; border: 1px solid var(--primary); display: none; z-index: 1000; font-size: 13px; }
 
         @media (min-width: 992px) {
@@ -100,14 +104,19 @@
                 <button class="btn-sell" onclick="executeTrade('SELL')">SELL</button>
             </div>
         </div>
-        <button onclick="resetData()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:10px; margin-top:5px;">Reset All Data</button>
+
+        <button onclick="resetData()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:10px; margin-top:5px; width: fit-content; align-self: center;">Reset All Data</button>
+        
+        <div class="binance-info">
+            <span class="dot"></span> Connected this Binance: 896991761
+        </div>
     </div>
 
     <div class="main-content">
         <div class="chart-box">
             <div class="box-header">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
-                <span id="news-label" class="label" style="font-size:9px; color: var(--primary); font-weight: bold; display:none;">🚨 BREAKING NEWS SPIKE</span>
+                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 BULLISH NEWS SPIKE!</span>
                 <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
@@ -126,13 +135,12 @@
 </div>
 
 <script>
-    // --- Updated Price Config ---
     const MIN_PRICE = 6.9080;
     const MAX_PRICE = 13.8590;
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 417.98;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 6.9080;
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 8.5000;
     let priceDirection = localStorage.getItem('ast_direction') || 'up'; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     let historyLog = JSON.parse(localStorage.getItem('ast_history')) || [];
@@ -156,12 +164,11 @@
 
         let movement;
         
-        // --- News Logic (Random Boro Candle) ---
-        // 5% chance of a "Breaking News" spike of $2.10 - $3.50
-        let isNews = Math.random() < 0.05; 
+        // --- Pump-only News Spike ---
+        let isNews = Math.random() < 0.05 && priceDirection === 'up'; 
         
         if (isNews) {
-            movement = 2.10 + (Math.random() * 1.40); // Generates spike between 2.10 and 3.50
+            movement = 2.098 + (Math.random() * 1.50); 
             document.getElementById('news-label').style.display = 'inline';
             document.getElementById('normal-label').style.display = 'none';
             setTimeout(() => {
@@ -169,23 +176,21 @@
                 document.getElementById('normal-label').style.display = 'inline';
             }, 3000);
         } else {
-            // Normal fluctuation: 0.02 to 0.15
             movement = (Math.random() * 0.13) + 0.02;
         }
 
-        let isDip = Math.random() < 0.30; 
+        let isDip = Math.random() < 0.40; 
 
         if (priceDirection === 'up') {
-            if (isDip && !isNews) currentLivePrice -= (movement * 0.5); 
+            if (isDip && !isNews) currentLivePrice -= (movement * 0.4); 
             else currentLivePrice += movement;
             if (currentLivePrice >= MAX_PRICE) priceDirection = 'down';
         } else {
-            if (isDip && !isNews) currentLivePrice += (movement * 0.5);
-            else currentLivePrice -= movement;
+            // Slow Dump: no spikes
+            currentLivePrice -= (movement * 0.8);
             if (currentLivePrice <= MIN_PRICE) priceDirection = 'up';
         }
 
-        // Keep within bounds
         if (currentLivePrice > MAX_PRICE) currentLivePrice = MAX_PRICE;
         if (currentLivePrice < MIN_PRICE) currentLivePrice = MIN_PRICE;
 
@@ -195,9 +200,9 @@
             if (seriesData.length > 40) seriesData.shift(); 
         } else {
             let y = lastCandle.y;
-            y[1] = Math.max(y[1], currentLivePrice); // High
-            y[2] = Math.min(y[2], currentLivePrice); // Low
-            y[3] = currentLivePrice; // Close
+            y[1] = Math.max(y[1], currentLivePrice);
+            y[2] = Math.min(y[2], currentLivePrice);
+            y[3] = currentLivePrice;
         }
 
         localStorage.setItem('ast_last_price', currentLivePrice);
