@@ -80,7 +80,7 @@
 
         <div class="price-display">
             <p class="label">Live Price (USD)</p>
-            <h2 id="current-price">$5.0900</h2>
+            <h2 id="current-price">$6.9080</h2>
         </div>
 
         <div class="balance-card">
@@ -107,7 +107,8 @@
         <div class="chart-box">
             <div class="box-header">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
-                <span class="label" style="font-size:9px;">Live Fluctuations</span>
+                <span id="news-label" class="label" style="font-size:9px; color: var(--primary); font-weight: bold; display:none;">🚨 BREAKING NEWS SPIKE</span>
+                <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
         </div>
@@ -125,12 +126,13 @@
 </div>
 
 <script>
-    const MIN_PRICE = 5.0900;
-    const MAX_PRICE = 7.0900;
+    // --- Updated Price Config ---
+    const MIN_PRICE = 6.9080;
+    const MAX_PRICE = 13.8590;
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 417.98;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 5.0900;
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 6.9080;
     let priceDirection = localStorage.getItem('ast_direction') || 'up'; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     let historyLog = JSON.parse(localStorage.getItem('ast_history')) || [];
@@ -140,9 +142,9 @@
 
     const chart = new ApexCharts(document.querySelector("#chart"), {
         series: [{ data: seriesData }],
-        chart: { type: 'candlestick', height: '100%', toolbar: { show: false }, animations: { enabled: false }, background: 'transparent' },
+        chart: { type: 'candlestick', height: '100%', toolbar: { show: false }, animations: { enabled: true, speed: 800 }, background: 'transparent' },
         xaxis: { type: 'datetime', labels: { style: { colors: '#787b86', fontSize: '10px' }, datetimeUTC: false }, axisBorder: { show: false } },
-        yaxis: { opposite: true, min: MIN_PRICE - 0.1, max: MAX_PRICE + 0.1, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
+        yaxis: { opposite: true, min: MIN_PRICE - 0.5, max: MAX_PRICE + 0.5, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
         grid: { borderColor: '#363c4e', strokeDashArray: 4 },
         plotOptions: { candlestick: { colors: { up: successColor, down: dangerColor } } }
     });
@@ -152,26 +154,41 @@
         const now = new Date().getTime();
         const candleTime = Math.floor(now / CANDLE_DURATION) * CANDLE_DURATION;
 
-        // প্রাইস মুভমেন্ট লজিক: 0.0124 এর মতো র‍্যান্ডম সেন্ট সিস্টেম
-        // 'up' ট্রেন্ডে বাড়ার সম্ভাবনা ৭০%, কমার সম্ভাবনা ৩০% (যাতে গ্রাফ উপরের দিকেই যায়)
-        let movement = (Math.random() * 0.0150) + 0.0050; // র‍্যান্ডম 0.0050 থেকে 0.0200
+        let movement;
         
-        let isDip = Math.random() < 0.35; // ৩৫% সম্ভাবনা যে প্রাইস একটু কমবে (Fluctuation)
+        // --- News Logic (Random Boro Candle) ---
+        // 5% chance of a "Breaking News" spike of $2.10 - $3.50
+        let isNews = Math.random() < 0.05; 
+        
+        if (isNews) {
+            movement = 2.10 + (Math.random() * 1.40); // Generates spike between 2.10 and 3.50
+            document.getElementById('news-label').style.display = 'inline';
+            document.getElementById('normal-label').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('news-label').style.display = 'none';
+                document.getElementById('normal-label').style.display = 'inline';
+            }, 3000);
+        } else {
+            // Normal fluctuation: 0.02 to 0.15
+            movement = (Math.random() * 0.13) + 0.02;
+        }
+
+        let isDip = Math.random() < 0.30; 
 
         if (priceDirection === 'up') {
-            if (isDip) currentLivePrice -= (movement * 0.6); // সামান্য ডিপ
-            else currentLivePrice += movement; // বড় জাম্প
-            
+            if (isDip && !isNews) currentLivePrice -= (movement * 0.5); 
+            else currentLivePrice += movement;
             if (currentLivePrice >= MAX_PRICE) priceDirection = 'down';
         } else {
-            // Down trend এও কিছুটা ফ্লাকচুয়েশন থাকবে
-            if (isDip) currentLivePrice += (movement * 0.6);
+            if (isDip && !isNews) currentLivePrice += (movement * 0.5);
             else currentLivePrice -= movement;
-            
             if (currentLivePrice <= MIN_PRICE) priceDirection = 'up';
         }
 
-        // ক্যান্ডেলস্টিক ডাটা ম্যানেজমেন্ট
+        // Keep within bounds
+        if (currentLivePrice > MAX_PRICE) currentLivePrice = MAX_PRICE;
+        if (currentLivePrice < MIN_PRICE) currentLivePrice = MIN_PRICE;
+
         let lastCandle = seriesData[seriesData.length - 1];
         if (!lastCandle || lastCandle.x !== candleTime) {
             seriesData.push({ x: candleTime, y: [currentLivePrice, currentLivePrice, currentLivePrice, currentLivePrice] });
@@ -187,7 +204,7 @@
         localStorage.setItem('ast_direction', priceDirection);
         localStorage.setItem('ast_series', JSON.stringify(seriesData));
 
-        chart.updateSeries([{ data: seriesData }], false);
+        chart.updateSeries([{ data: [...seriesData] }], false);
         updateUI();
     }
 
@@ -252,7 +269,7 @@
 
     updateHistoryTable();
     updateUI();
-    setInterval(updateMarket, 1000); // প্রতি সেকেন্ডে মুভমেন্ট
+    setInterval(updateMarket, 1000); 
 </script>
 
 </body>
