@@ -54,7 +54,6 @@
         .history-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 400px; }
         .history-table th, .history-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--border); }
 
-        /* Footer Info Style */
         .binance-info { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 10px; letter-spacing: 0.5px; border-top: 1px solid var(--border); padding-top: 10px; }
         .dot { height: 6px; width: 6px; background-color: var(--success); border-radius: 50%; display: inline-block; margin-right: 4px; }
 
@@ -84,7 +83,7 @@
 
         <div class="price-display">
             <p class="label">Live Price (USD)</p>
-            <h2 id="current-price">$6.9080</h2>
+            <h2 id="current-price">$7.0000</h2>
         </div>
 
         <div class="balance-card">
@@ -116,7 +115,7 @@
         <div class="chart-box">
             <div class="box-header">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
-                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 BULLISH NEWS SPIKE!</span>
+                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 BINANCE NEWS PUMP!</span>
                 <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
@@ -135,12 +134,14 @@
 </div>
 
 <script>
-    const MIN_PRICE = 6.9080;
-    const MAX_PRICE = 13.8590;
+    const NORMAL_MIN = 6.9080;
+    const NORMAL_MAX = 7.5000;
+    const PUMP_TARGET_MIN = 21.5640;
+    const PUMP_TARGET_MAX = 22.4630;
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 417.98;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 8.5000;
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 7.0000;
     let priceDirection = localStorage.getItem('ast_direction') || 'up'; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     let historyLog = JSON.parse(localStorage.getItem('ast_history')) || [];
@@ -152,48 +153,53 @@
         series: [{ data: seriesData }],
         chart: { type: 'candlestick', height: '100%', toolbar: { show: false }, animations: { enabled: true, speed: 800 }, background: 'transparent' },
         xaxis: { type: 'datetime', labels: { style: { colors: '#787b86', fontSize: '10px' }, datetimeUTC: false }, axisBorder: { show: false } },
-        yaxis: { opposite: true, min: MIN_PRICE - 0.5, max: MAX_PRICE + 0.5, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
+        yaxis: { opposite: true, min: 6, max: 24, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
         grid: { borderColor: '#363c4e', strokeDashArray: 4 },
         plotOptions: { candlestick: { colors: { up: successColor, down: dangerColor } } }
     });
     chart.render();
 
     function updateMarket() {
-        const now = new Date().getTime();
-        const candleTime = Math.floor(now / CANDLE_DURATION) * CANDLE_DURATION;
+        const now = new Date();
+        const bdHours = now.getHours();
+        const bdMinutes = now.getMinutes();
+        
+        // --- নিউজ টাইম আপডেট: সন্ধ্যা ৭:১০ (19:10) ---
+        const isPumpTime = (bdHours > 19 || (bdHours === 19 && bdMinutes >= 10));
 
         let movement;
-        
-        // --- Pump-only News Spike ---
-        let isNews = Math.random() < 0.05 && priceDirection === 'up'; 
-        
-        if (isNews) {
-            movement = 2.098 + (Math.random() * 1.50); 
-            document.getElementById('news-label').style.display = 'inline';
-            document.getElementById('normal-label').style.display = 'none';
-            setTimeout(() => {
-                document.getElementById('news-label').style.display = 'none';
-                document.getElementById('normal-label').style.display = 'inline';
-            }, 3000);
+        if (isPumpTime) {
+            if (currentLivePrice < PUMP_TARGET_MIN) {
+                // পাম্প শুরু হলে দ্রুত ৭ ডলার থেকে ২১ এর দিকে যাবে
+                movement = 2.5 + (Math.random() * 3.0); 
+                currentLivePrice += movement;
+                document.getElementById('news-label').style.display = 'inline';
+                document.getElementById('normal-label').style.display = 'none';
+            } else {
+                // টার্গেট জোনে পৌছানোর পর ০.০০৭ মুভমেন্ট
+                movement = 0.007; 
+                let isUp = Math.random() < 0.5;
+                if (isUp) {
+                    currentLivePrice += movement;
+                    if (currentLivePrice > PUMP_TARGET_MAX) currentLivePrice -= movement;
+                } else {
+                    currentLivePrice -= movement;
+                    if (currentLivePrice < PUMP_TARGET_MIN) currentLivePrice += movement;
+                }
+            }
         } else {
-            movement = (Math.random() * 0.13) + 0.02;
+            // ৭ ডলারের আশেপাশে সাধারণ মুভমেন্ট
+            movement = (Math.random() * 0.05) + 0.01;
+            if (priceDirection === 'up') {
+                currentLivePrice += movement;
+                if (currentLivePrice >= NORMAL_MAX) priceDirection = 'down';
+            } else {
+                currentLivePrice -= movement;
+                if (currentLivePrice <= NORMAL_MIN) priceDirection = 'up';
+            }
         }
 
-        let isDip = Math.random() < 0.40; 
-
-        if (priceDirection === 'up') {
-            if (isDip && !isNews) currentLivePrice -= (movement * 0.4); 
-            else currentLivePrice += movement;
-            if (currentLivePrice >= MAX_PRICE) priceDirection = 'down';
-        } else {
-            // Slow Dump: no spikes
-            currentLivePrice -= (movement * 0.8);
-            if (currentLivePrice <= MIN_PRICE) priceDirection = 'up';
-        }
-
-        if (currentLivePrice > MAX_PRICE) currentLivePrice = MAX_PRICE;
-        if (currentLivePrice < MIN_PRICE) currentLivePrice = MIN_PRICE;
-
+        const candleTime = Math.floor(new Date().getTime() / CANDLE_DURATION) * CANDLE_DURATION;
         let lastCandle = seriesData[seriesData.length - 1];
         if (!lastCandle || lastCandle.x !== candleTime) {
             seriesData.push({ x: candleTime, y: [currentLivePrice, currentLivePrice, currentLivePrice, currentLivePrice] });
@@ -206,9 +212,6 @@
         }
 
         localStorage.setItem('ast_last_price', currentLivePrice);
-        localStorage.setItem('ast_direction', priceDirection);
-        localStorage.setItem('ast_series', JSON.stringify(seriesData));
-
         chart.updateSeries([{ data: [...seriesData] }], false);
         updateUI();
     }
@@ -217,49 +220,22 @@
         document.getElementById('current-price').innerText = `$${currentLivePrice.toFixed(4)}`;
         document.getElementById('total-value').innerText = `$${(currentLivePrice * myAmount).toFixed(2)}`;
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
-
+        
         const trendEl = document.getElementById('price-trend');
-        trendEl.innerText = priceDirection === 'up' ? "▲ Bullish" : "▼ Bearish";
-        trendEl.className = `status-badge ${priceDirection === 'up' ? 'up' : 'down'}`;
-        document.getElementById('current-price').style.color = priceDirection === 'up' ? successColor : dangerColor;
+        const isUp = currentLivePrice > 15 || priceDirection === 'up';
+        trendEl.innerText = currentLivePrice > 15 ? "🚀 MOONING" : (isUp ? "▲ Bullish" : "▼ Bearish");
+        trendEl.className = `status-badge ${isUp ? 'up' : 'down'}`;
+        document.getElementById('current-price').style.color = isUp ? successColor : dangerColor;
     }
 
     function executeTrade(type) {
         const amount = parseFloat(document.getElementById('trade-amount').value);
         if (isNaN(amount) || amount <= 0) return;
         if (type === 'SELL' && amount > myAmount) { showNotification("⚠️ Insufficient balance!"); return; }
-
         myAmount = type === 'BUY' ? myAmount + amount : myAmount - amount;
-
-        const trade = {
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            type: type,
-            amount: amount,
-            price: currentLivePrice.toFixed(4),
-            total: (amount * currentLivePrice).toFixed(2)
-        };
-        
-        historyLog.unshift(trade);
-        if(historyLog.length > 10) historyLog.pop();
-
         localStorage.setItem('ast_balance', myAmount);
-        localStorage.setItem('ast_history', JSON.stringify(historyLog));
-
-        updateHistoryTable();
-        updateUI();
         showNotification(`✅ ${type} Order Successful`);
-    }
-
-    function updateHistoryTable() {
-        document.getElementById('history-log').innerHTML = historyLog.map(t => `
-            <tr>
-                <td>${t.time}</td>
-                <td style="color:${t.type==='BUY'?successColor:dangerColor}; font-weight:bold">${t.type}</td>
-                <td>${t.amount}</td>
-                <td>$${t.price}</td>
-                <td>$${t.total}</td>
-            </tr>
-        `).join('');
+        updateUI();
     }
 
     function showNotification(msg) {
@@ -268,13 +244,10 @@
         setTimeout(() => n.style.display = 'none', 2000);
     }
 
-    function resetData() {
-        if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
-    }
+    function resetData() { if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); } }
 
-    updateHistoryTable();
     updateUI();
-    setInterval(updateMarket, 1000); 
+    setInterval(updateMarket, 1000);
 </script>
 
 </body>
