@@ -83,7 +83,7 @@
 
         <div class="price-display">
             <p class="label">Live Price (USD)</p>
-            <h2 id="current-price">$7.0000</h2>
+            <h2 id="current-price">$24.0000</h2>
         </div>
 
         <div class="balance-card">
@@ -107,7 +107,7 @@
         <button onclick="resetData()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:10px; margin-top:5px; width: fit-content; align-self: center;">Reset All Data</button>
         
         <div class="binance-info">
-            <span class="dot"></span> Connected this Binance: 896991761
+            <span class="dot"></span> Connected Binance: 896991761
         </div>
     </div>
 
@@ -115,7 +115,6 @@
         <div class="chart-box">
             <div class="box-header">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
-                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 BINANCE NEWS PUMP!</span>
                 <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
@@ -134,14 +133,14 @@
 </div>
 
 <script>
-    const NORMAL_MIN = 6.9080;
-    const NORMAL_MAX = 7.5000;
-    const PUMP_TARGET_MIN = 21.5640;
-    const PUMP_TARGET_MAX = 22.4630;
+    // আপনার দেওয়া নির্দিষ্ট প্রাইস রেঞ্জ
+    const RANGE_MIN = 23.234;
+    const RANGE_MAX = 25.453;
     const CANDLE_DURATION = 10000; 
 
+    // ডাটা লোড করা (ডিফল্ট ২৪.০০০ সেট করা হয়েছে)
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 417.98;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 7.0000;
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 24.0000;
     let priceDirection = localStorage.getItem('ast_direction') || 'up'; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     let historyLog = JSON.parse(localStorage.getItem('ast_history')) || [];
@@ -153,54 +152,33 @@
         series: [{ data: seriesData }],
         chart: { type: 'candlestick', height: '100%', toolbar: { show: false }, animations: { enabled: true, speed: 800 }, background: 'transparent' },
         xaxis: { type: 'datetime', labels: { style: { colors: '#787b86', fontSize: '10px' }, datetimeUTC: false }, axisBorder: { show: false } },
-        yaxis: { opposite: true, min: 6, max: 24, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
+        yaxis: { opposite: true, min: 22, max: 27, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
         grid: { borderColor: '#363c4e', strokeDashArray: 4 },
         plotOptions: { candlestick: { colors: { up: successColor, down: dangerColor } } }
     });
     chart.render();
 
     function updateMarket() {
-        const now = new Date();
-        const bdHours = now.getHours();
-        const bdMinutes = now.getMinutes();
-        
-        // --- নিউজ টাইম আপডেট: সন্ধ্যা ৭:১০ (19:10) ---
-        const isPumpTime = (bdHours > 19 || (bdHours === 19 && bdMinutes >= 10));
+        // মুভমেন্ট খুব ধীর করার জন্য (০.০০১ - ০.০০৫)
+        let movement = (Math.random() * 0.004) + 0.001;
 
-        let movement;
-        if (isPumpTime) {
-            if (currentLivePrice < PUMP_TARGET_MIN) {
-                // পাম্প শুরু হলে দ্রুত ৭ ডলার থেকে ২১ এর দিকে যাবে
-                movement = 2.5 + (Math.random() * 3.0); 
-                currentLivePrice += movement;
-                document.getElementById('news-label').style.display = 'inline';
-                document.getElementById('normal-label').style.display = 'none';
-            } else {
-                // টার্গেট জোনে পৌছানোর পর ০.০০৭ মুভমেন্ট
-                movement = 0.007; 
-                let isUp = Math.random() < 0.5;
-                if (isUp) {
-                    currentLivePrice += movement;
-                    if (currentLivePrice > PUMP_TARGET_MAX) currentLivePrice -= movement;
-                } else {
-                    currentLivePrice -= movement;
-                    if (currentLivePrice < PUMP_TARGET_MIN) currentLivePrice += movement;
-                }
+        if (priceDirection === 'up') {
+            currentLivePrice += movement;
+            if (currentLivePrice >= RANGE_MAX) {
+                currentLivePrice = RANGE_MAX;
+                priceDirection = 'down';
             }
         } else {
-            // ৭ ডলারের আশেপাশে সাধারণ মুভমেন্ট
-            movement = (Math.random() * 0.05) + 0.01;
-            if (priceDirection === 'up') {
-                currentLivePrice += movement;
-                if (currentLivePrice >= NORMAL_MAX) priceDirection = 'down';
-            } else {
-                currentLivePrice -= movement;
-                if (currentLivePrice <= NORMAL_MIN) priceDirection = 'up';
+            currentLivePrice -= movement;
+            if (currentLivePrice <= RANGE_MIN) {
+                currentLivePrice = RANGE_MIN;
+                priceDirection = 'up';
             }
         }
 
         const candleTime = Math.floor(new Date().getTime() / CANDLE_DURATION) * CANDLE_DURATION;
         let lastCandle = seriesData[seriesData.length - 1];
+        
         if (!lastCandle || lastCandle.x !== candleTime) {
             seriesData.push({ x: candleTime, y: [currentLivePrice, currentLivePrice, currentLivePrice, currentLivePrice] });
             if (seriesData.length > 40) seriesData.shift(); 
@@ -212,6 +190,9 @@
         }
 
         localStorage.setItem('ast_last_price', currentLivePrice);
+        localStorage.setItem('ast_direction', priceDirection);
+        localStorage.setItem('ast_series', JSON.stringify(seriesData));
+        
         chart.updateSeries([{ data: [...seriesData] }], false);
         updateUI();
     }
@@ -222,8 +203,8 @@
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
         
         const trendEl = document.getElementById('price-trend');
-        const isUp = currentLivePrice > 15 || priceDirection === 'up';
-        trendEl.innerText = currentLivePrice > 15 ? "🚀 MOONING" : (isUp ? "▲ Bullish" : "▼ Bearish");
+        const isUp = priceDirection === 'up';
+        trendEl.innerText = isUp ? "▲ Bullish" : "▼ Bearish";
         trendEl.className = `status-badge ${isUp ? 'up' : 'down'}`;
         document.getElementById('current-price').style.color = isUp ? successColor : dangerColor;
     }
@@ -232,8 +213,16 @@
         const amount = parseFloat(document.getElementById('trade-amount').value);
         if (isNaN(amount) || amount <= 0) return;
         if (type === 'SELL' && amount > myAmount) { showNotification("⚠️ Insufficient balance!"); return; }
+        
         myAmount = type === 'BUY' ? myAmount + amount : myAmount - amount;
         localStorage.setItem('ast_balance', myAmount);
+        
+        // হিস্ট্রি অ্যাড করা
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const total = (amount * currentLivePrice).toFixed(2);
+        const logHtml = `<tr><td>${time}</td><td style="color:${type==='BUY'?successColor:dangerColor}">${type}</td><td>${amount}</td><td>${currentLivePrice.toFixed(2)}</td><td>$${total}</td></tr>`;
+        document.getElementById('history-log').insertAdjacentHTML('afterbegin', logHtml);
+
         showNotification(`✅ ${type} Order Successful`);
         updateUI();
     }
@@ -247,7 +236,7 @@
     function resetData() { if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); } }
 
     updateUI();
-    setInterval(updateMarket, 1000);
+    setInterval(updateMarket, 1000); // প্রতি সেকেন্ডে মার্কেট আপডেট হবে কিন্তু মুভমেন্ট হবে খুব সামান্য
 </script>
 
 </body>
