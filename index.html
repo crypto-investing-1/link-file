@@ -149,18 +149,17 @@
         const hrs = now.getHours();
         const mins = now.getMinutes();
 
-        // ডাম্প কন্ডিশন: শুক্রবার সন্ধ্যা ৬:৩০ (১৮:৩০)
+        // ডাম্প কন্ডিশন: আজ শুক্রবার বিকাল ৫:৩০ (১৭:৩০)
         const isFriday = (day === 5);
-        const isDumpTime = isFriday && ((hrs === 18 && mins >= 30) || (hrs > 18));
+        const isDumpTime = isFriday && ((hrs === 17 && mins >= 30) || (hrs > 17));
 
-        // পাম্প কন্ডিশন (পাম্প শুরু ১৯:১০ থেকে, কিন্তু এটি এখন হাই প্রাইসে থাকবে)
-        // আমরা এখন প্রাইসকে ২৭.৮৬৫ এর আশেপাশে রাখবো যতক্ষণ না শুক্রবার ৬:৩০ বাজে
-        const isStableHigh = !isDumpTime && (hrs >= 19 || hrs < 18 || (hrs === 18 && mins < 30));
+        // পাম্প কন্ডিশন (পাম্প এখন হাই প্রাইসে থাকবে যতক্ষণ না বিকাল ৫:৩০ বাজে)
+        const isStableHigh = !isDumpTime && (hrs >= 19 || hrs < 17 || (hrs === 17 && mins < 30));
 
         let movement;
         
         if (isDumpTime) {
-            // শুক্রবার ১৮:৩০ বাজার সাথে সাথে ক্র্যাশ
+            // ১৭:৩০ বাজার সাথে সাথে ক্র্যাশ
             document.getElementById('news-label').style.display = 'none';
             document.getElementById('dump-label').style.display = 'inline';
             document.getElementById('normal-label').style.display = 'none';
@@ -183,13 +182,10 @@
             document.getElementById('normal-label').style.display = 'none';
 
             if (currentLivePrice < 25) {
-                // যদি রিসেট করা হয় বা প্রাইস কম থাকে তবে দ্রুত ২৭.৮৬৫ এ যাবে
                 currentLivePrice += 2.0;
             } else {
-                // ২৭.৮৬৫ এর আশেপাশে সামান্য মুভমেন্ট
                 movement = 0.005;
                 currentLivePrice += (Math.random() > 0.5 ? movement : -movement);
-                // ২৭.৮৬৫ এর আশেপাশে লিমিট রাখা
                 if (currentLivePrice > 27.950) currentLivePrice = 27.865;
                 if (currentLivePrice < 27.750) currentLivePrice = 27.865;
             }
