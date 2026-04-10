@@ -30,7 +30,6 @@
         .balance-row { display: flex; justify-content: space-between; margin-top: 8px; font-size: 14px; }
         .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
         .up { color: var(--success); background: rgba(0, 192, 118, 0.1); }
-        .down { color: var(--danger); background: rgba(255, 64, 64, 0.1); }
         .trade-options { display: flex; flex-direction: column; gap: 10px; }
         .trade-input-group { display: flex; background: var(--bg-input); border-radius: 6px; border: 1px solid var(--border); overflow: hidden; }
         .trade-input-group input { flex: 1; background: transparent; border: none; color: var(--text-main); padding: 12px; outline: none; font-size: 16px; width: 100%; }
@@ -62,18 +61,18 @@
             <div class="coin-logo">A</div>
             <div>
                 <h3 style="margin:0">ASTER <span style="color:var(--text-muted); font-size:13px;">(AST)</span></h3>
-                <div id="price-trend" class="status-badge up">Live Market</div>
+                <div id="price-trend" class="status-badge up">Market Active</div>
             </div>
         </div>
 
         <div class="price-display">
             <p class="label">Live Price (USD)</p>
-            <h2 id="current-price">$7.0000</h2>
+            <h2 id="current-price">$0.0000</h2>
         </div>
 
         <div class="balance-card">
             <p class="label">Your Assets</p>
-            <div class="balance-row"><span>Amount:</span> <strong id="balance-amount">417.98 AST</strong></div>
+            <div class="balance-row"><span>Amount:</span> <strong id="balance-amount">1763 AST</strong></div>
             <div class="balance-row"><span>Total Value:</span> <strong id="total-value" style="color: var(--primary);">$0.00</strong></div>
         </div>
 
@@ -100,8 +99,6 @@
         <div class="chart-box">
             <div class="box-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
-                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 BINANCE NEWS PUMP!</span>
-                <span id="dump-label" class="label" style="font-size:9px; color: var(--danger); font-weight: bold; display:none;">⚠️ MARKET SELL-OFF!</span>
                 <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
@@ -121,13 +118,13 @@
 
 <script>
     // --- Configuration ---
-    const PUMP_STABLE_PRICE = 27.8650;
-    const DUMP_TARGET_MIN = 0.0342;
-    const DUMP_TARGET_MAX = 0.0423;
+    const MIN_PRICE = 0.0213;
+    const MAX_PRICE = 0.1000;
     const CANDLE_DURATION = 10000; 
 
-    let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 417.98;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 7.0000;
+    // ডিফল্ট ব্যালেন্স ১৭৬৩ সেট করা হয়েছে
+    let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 1763;
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0542; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
 
     const successColor = '#00c076';
@@ -137,58 +134,32 @@
         series: [{ data: seriesData }],
         chart: { type: 'candlestick', height: '100%', toolbar: { show: false }, animations: { enabled: true, speed: 800 }, background: 'transparent' },
         xaxis: { type: 'datetime', labels: { style: { colors: '#787b86', fontSize: '10px' } } },
-        yaxis: { opposite: true, labels: { formatter: (val) => val.toFixed(3), style: { colors: '#787b86', fontSize: '10px' } } },
+        yaxis: { 
+            opposite: true, 
+            min: 0.015,
+            max: 0.11,
+            labels: { formatter: (val) => val.toFixed(4), style: { colors: '#787b86', fontSize: '10px' } } 
+        },
         grid: { borderColor: '#363c4e' },
         plotOptions: { candlestick: { colors: { up: successColor, down: dangerColor } } }
     });
     chart.render();
 
     function updateMarket() {
-        const now = new Date();
-        const day = now.getDay(); // 5 = Friday
-        const hrs = now.getHours();
-        const mins = now.getMinutes();
-
-        // ডাম্প কন্ডিশন: আজ শুক্রবার বিকাল ৫:৩০ (১৭:৩০)
-        const isFriday = (day === 5);
-        const isDumpTime = isFriday && ((hrs === 17 && mins >= 30) || (hrs > 17));
-
-        // পাম্প কন্ডিশন (পাম্প এখন হাই প্রাইসে থাকবে যতক্ষণ না বিকাল ৫:৩০ বাজে)
-        const isStableHigh = !isDumpTime && (hrs >= 19 || hrs < 17 || (hrs === 17 && mins < 30));
-
-        let movement;
+        const volatility = 0.0004; 
+        let change = (Math.random() * volatility);
         
-        if (isDumpTime) {
-            // ১৭:৩০ বাজার সাথে সাথে ক্র্যাশ
-            document.getElementById('news-label').style.display = 'none';
-            document.getElementById('dump-label').style.display = 'inline';
-            document.getElementById('normal-label').style.display = 'none';
+        if (Math.random() > 0.5) {
+            currentLivePrice += change;
+        } else {
+            currentLivePrice -= change;
+        }
 
-            if (currentLivePrice > DUMP_TARGET_MAX) {
-                movement = currentLivePrice * 0.15; // দ্রুত কমানো
-                currentLivePrice -= movement;
-            } else {
-                // টার্গেট রেঞ্জে ফ্লাকচুয়েশন
-                movement = (Math.random() * 0.001);
-                currentLivePrice += (Math.random() > 0.5 ? movement : -movement);
-                if (currentLivePrice < DUMP_TARGET_MIN) currentLivePrice = DUMP_TARGET_MIN;
-                if (currentLivePrice > DUMP_TARGET_MAX) currentLivePrice = DUMP_TARGET_MAX;
-            }
-        } 
-        else if (isStableHigh) {
-            // ডাম্পের আগ পর্যন্ত প্রাইস ২৭.৮৬৫ এর আশেপাশে থাকবে
-            document.getElementById('news-label').style.display = 'inline';
-            document.getElementById('dump-label').style.display = 'none';
-            document.getElementById('normal-label').style.display = 'none';
-
-            if (currentLivePrice < 25) {
-                currentLivePrice += 2.0;
-            } else {
-                movement = 0.005;
-                currentLivePrice += (Math.random() > 0.5 ? movement : -movement);
-                if (currentLivePrice > 27.950) currentLivePrice = 27.865;
-                if (currentLivePrice < 27.750) currentLivePrice = 27.865;
-            }
+        if (currentLivePrice <= MIN_PRICE) {
+            currentLivePrice = MIN_PRICE + 0.0002;
+        }
+        if (currentLivePrice >= MAX_PRICE) {
+            currentLivePrice = MAX_PRICE - 0.0002;
         }
 
         updateChartData(currentLivePrice);
@@ -218,9 +189,8 @@
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
         
         const trendEl = document.getElementById('price-trend');
-        trendEl.innerText = currentLivePrice > 10 ? "🚀 MOONING" : (currentLivePrice < 1 ? "⚠️ CRASHING" : "Market Active");
-        trendEl.className = `status-badge ${currentLivePrice > 1 ? 'up' : 'down'}`;
-        document.getElementById('current-price').style.color = currentLivePrice > 1 ? successColor : dangerColor;
+        trendEl.className = "status-badge up";
+        document.getElementById('current-price').style.color = successColor;
     }
 
     function executeTrade(type) {
@@ -232,7 +202,7 @@
         localStorage.setItem('ast_balance', myAmount);
         
         const log = document.getElementById('history-log');
-        const row = `<tr><td>${new Date().toLocaleTimeString()}</td><td style="color:${type==='BUY'?successColor:dangerColor}">${type}</td><td>${amt}</td><td>$${currentLivePrice.toFixed(3)}</td><td>$${(amt*currentLivePrice).toFixed(2)}</td></tr>`;
+        const row = `<tr><td>${new Date().toLocaleTimeString()}</td><td style="color:${type==='BUY'?successColor:dangerColor}">${type}</td><td>${amt}</td><td>$${currentLivePrice.toFixed(4)}</td><td>$${(amt*currentLivePrice).toFixed(2)}</td></tr>`;
         log.insertAdjacentHTML('afterbegin', row);
         
         showNotification(`✅ ${type} Successful`);
