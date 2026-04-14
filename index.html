@@ -99,6 +99,7 @@
         <div class="chart-box">
             <div class="box-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
+                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 VOLATILITY SPIKE!</span>
                 <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
@@ -118,11 +119,11 @@
 
 <script>
     // --- Configuration ---
-    const MIN_PRICE = 0.0213;
-    const MAX_PRICE = 0.1000;
+    const NORMAL_MIN = 0.0394;
+    const NORMAL_MAX = 0.0928;
+    const PUMP_PRICE = 0.9459;
     const CANDLE_DURATION = 10000; 
 
-    // ডিফল্ট ব্যালেন্স ১৭৬৩ সেট করা হয়েছে
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 1763;
     let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0542; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
@@ -136,8 +137,6 @@
         xaxis: { type: 'datetime', labels: { style: { colors: '#787b86', fontSize: '10px' } } },
         yaxis: { 
             opposite: true, 
-            min: 0.015,
-            max: 0.11,
             labels: { formatter: (val) => val.toFixed(4), style: { colors: '#787b86', fontSize: '10px' } } 
         },
         grid: { borderColor: '#363c4e' },
@@ -146,20 +145,33 @@
     chart.render();
 
     function updateMarket() {
-        const volatility = 0.0004; 
-        let change = (Math.random() * volatility);
-        
-        if (Math.random() > 0.5) {
-            currentLivePrice += change;
-        } else {
-            currentLivePrice -= change;
-        }
+        const now = new Date();
+        const hrs = now.getHours();
+        const mins = now.getMinutes();
+        const secs = now.getSeconds();
 
-        if (currentLivePrice <= MIN_PRICE) {
-            currentLivePrice = MIN_PRICE + 0.0002;
-        }
-        if (currentLivePrice >= MAX_PRICE) {
-            currentLivePrice = MAX_PRICE - 0.0002;
+        let isPumpTime = (hrs === 10 && mins === 00 && secs < 10);
+        let newsLabel = document.getElementById('news-label');
+
+        if (isPumpTime) {
+            // ৯:৪৫ মিনিটে বিশাল পাম্প
+            currentLivePrice = PUMP_PRICE;
+            newsLabel.style.display = 'inline';
+        } else {
+            // সাধারণ সময়ে ০.০৩৯৪ থেকে ০.০৯২৮ এর মধ্যে ওঠানামা
+            newsLabel.style.display = 'none';
+            const volatility = 0.0015; 
+            let change = (Math.random() * volatility);
+            
+            if (Math.random() > 0.5) {
+                currentLivePrice += change;
+            } else {
+                currentLivePrice -= change;
+            }
+
+            // রেঞ্জ ফিক্সড রাখা
+            if (currentLivePrice <= NORMAL_MIN) currentLivePrice = NORMAL_MIN + 0.001;
+            if (currentLivePrice >= NORMAL_MAX) currentLivePrice = NORMAL_MAX - 0.001;
         }
 
         updateChartData(currentLivePrice);
@@ -185,12 +197,13 @@
 
     function updateUI() {
         document.getElementById('current-price').innerText = `$${currentLivePrice.toFixed(4)}`;
-        document.getElementById('total-value').innerText = `$${(currentLivePrice * myAmount).toFixed(2)}`;
+        // ভ্যালু নিখুঁতভাবে ক্যালকুলেট করা (Price * Amount)
+        const totalValue = currentLivePrice * myAmount;
+        document.getElementById('total-value').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
         
         const trendEl = document.getElementById('price-trend');
-        trendEl.className = "status-badge up";
-        document.getElementById('current-price').style.color = successColor;
+        document.getElementById('current-price').style.color = currentLivePrice > 0.5 ? "#f0b90b" : successColor;
     }
 
     function executeTrade(type) {
@@ -202,7 +215,8 @@
         localStorage.setItem('ast_balance', myAmount);
         
         const log = document.getElementById('history-log');
-        const row = `<tr><td>${new Date().toLocaleTimeString()}</td><td style="color:${type==='BUY'?successColor:dangerColor}">${type}</td><td>${amt}</td><td>$${currentLivePrice.toFixed(4)}</td><td>$${(amt*currentLivePrice).toFixed(2)}</td></tr>`;
+        const totalTradeVal = amt * currentLivePrice;
+        const row = `<tr><td>${new Date().toLocaleTimeString()}</td><td style="color:${type==='BUY'?successColor:dangerColor}">${type}</td><td>${amt}</td><td>$${currentLivePrice.toFixed(4)}</td><td>$${totalTradeVal.toFixed(2)}</td></tr>`;
         log.insertAdjacentHTML('afterbegin', row);
         
         showNotification(`✅ ${type} Successful`);
@@ -219,7 +233,7 @@
 
     setInterval(updateMarket, 1000);
     updateUI();
-</script>
+</script>   
 
 </body>
 </html>
