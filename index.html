@@ -118,11 +118,12 @@
 </div>
 
 <script>
-    // --- Configuration ---
-    const NORMAL_MIN = 0.0394;
-    const NORMAL_MAX = 0.0928;
-    const PUMP_PRICE = 0.9459;
-    const CANDLE_DURATION = 10000; 
+   // --- Configuration ---
+// আপনার নতুন রেঞ্জ অনুযায়ী মান দুটি পরিবর্তন করা হয়েছে
+const NORMAL_MIN = 0.1393;
+const NORMAL_MAX = 0.1693;
+const PUMP_PRICE = 0.9459;
+const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 1763;
     let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0542; 
