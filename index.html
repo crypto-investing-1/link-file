@@ -99,7 +99,6 @@
         <div class="chart-box">
             <div class="box-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3>ASTER / USD <span style="font-size:10px; color:var(--text-muted); font-weight: normal;">10s</span></h3>
-                <span id="news-label" class="label" style="font-size:9px; color: var(--success); font-weight: bold; display:none;">🚀 VOLATILITY SPIKE!</span>
                 <span id="normal-label" class="label" style="font-size:9px;">Live Fluctuations</span>
             </div>
             <div id="chart"></div>
@@ -118,16 +117,14 @@
 </div>
 
 <script>
-    // --- Configuration ---
-    const NORMAL_MIN = 0.1393;
-    const NORMAL_MAX = 0.1693;
-    const CRASH_MIN = 0.0021;
-    const CRASH_MAX = 0.0032;
-    const PUMP_PRICE = 0.9459;
+    // --- Configuration (Price Range: 0.0042 - 0.0051) ---
+    const MIN_PRICE = 0.0042;
+    const MAX_PRICE = 0.0051;
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 1763;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.1542; 
+    // শুরুর প্রাইস সেট করা হয়েছে ০.০০৪২ তে
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0045; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
 
     const successColor = '#00c076';
@@ -147,48 +144,16 @@
     chart.render();
 
     function updateMarket() {
-        const now = new Date();
-        const hrs = now.getHours();
-        const mins = now.getMinutes();
+        // দামের সামান্য ওঠানামা (Volatility)
+        const volatility = 0.00005; 
+        let change = (Math.random() * volatility);
         
-        let newsLabel = document.getElementById('news-label');
-        
-        // চেক করা হচ্ছে সময় কি রাত ১১টা (২৩:০০) বা তার বেশি কি না
-        const isAfterCrash = (hrs >= 23);
-        const isPumpTime = (hrs === 10 && mins === 0);
+        if (Math.random() > 0.48) currentLivePrice += change;
+        else currentLivePrice -= change;
 
-        if (isAfterCrash) {
-            // রাত ১১টার পর নতুন রেঞ্জ: ০.০০২১ থেকে ০.০০৩২
-            newsLabel.innerText = "📉 MARKET CRASHED";
-            newsLabel.style.color = dangerColor;
-            newsLabel.style.display = 'inline';
-
-            const volatility = 0.0001;
-            let change = (Math.random() * volatility);
-            if (Math.random() > 0.5) currentLivePrice += change;
-            else currentLivePrice -= change;
-
-            // ক্রাশ পরবর্তী রেঞ্জ ফিক্সড রাখা
-            if (currentLivePrice <= CRASH_MIN) currentLivePrice = CRASH_MIN;
-            if (currentLivePrice >= CRASH_MAX) currentLivePrice = CRASH_MAX;
-            
-        } else if (isPumpTime) {
-            // সকাল ১০টার পাম্প
-            currentLivePrice = PUMP_PRICE;
-            newsLabel.innerText = "🚀 VOLATILITY SPIKE!";
-            newsLabel.style.color = successColor;
-            newsLabel.style.display = 'inline';
-        } else {
-            // সাধারণ সময়ের মুভমেন্ট
-            newsLabel.style.display = 'none';
-            const volatility = 0.0015; 
-            let change = (Math.random() * volatility);
-            if (Math.random() > 0.5) currentLivePrice += change;
-            else currentLivePrice -= change;
-
-            if (currentLivePrice <= NORMAL_MIN) currentLivePrice = NORMAL_MIN + 0.001;
-            if (currentLivePrice >= NORMAL_MAX) currentLivePrice = NORMAL_MAX - 0.001;
-        }
+        // রেঞ্জ লক করা (০.০০৪২ - ০.০০৫১)
+        if (currentLivePrice < MIN_PRICE) currentLivePrice = MIN_PRICE;
+        if (currentLivePrice > MAX_PRICE) currentLivePrice = MAX_PRICE;
 
         updateChartData(currentLivePrice);
         updateUI();
@@ -217,12 +182,8 @@
         document.getElementById('total-value').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
         
-        // ১১টার পর দাম কমলে টেক্সট কালার লাল থাকবে
-        if (new Date().getHours() >= 23) {
-            document.getElementById('current-price').style.color = dangerColor;
-        } else {
-            document.getElementById('current-price').style.color = currentLivePrice > 0.5 ? "#f0b90b" : successColor;
-        }
+        // কালার ইন্ডিকেশন
+        document.getElementById('current-price').style.color = "#f0b90b";
     }
 
     function executeTrade(type) {
