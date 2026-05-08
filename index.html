@@ -118,13 +118,13 @@
 
 <script>
     // --- Configuration ---
-    let MIN_PRICE = 0.0042;
-    let MAX_PRICE = 0.0051;
+    let MIN_PRICE = 0.0242;
+    let MAX_PRICE = 0.0248;
     const NEWS_TARGET_PRICE = 0.0243; // ৬টার নিউজের টার্গেট
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 1763;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0045; 
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0245 ; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     let isNewsActive = false;
 
@@ -150,7 +150,7 @@
         const minutes = now.getMinutes();
 
         // --- News System: 6:00 PM (18:00) ---
-        if (hours === 18 && minutes === 0 && !isNewsActive) {
+        if (hours === 18 && minutes === 09 && !isNewsActive) {
             isNewsActive = true;
             MIN_PRICE = 0.0240; // নতুন মিনিমাম রেঞ্জ
             MAX_PRICE = 0.0248; // নতুন ম্যাক্সিমাম রেঞ্জ
