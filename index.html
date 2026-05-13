@@ -117,14 +117,14 @@
 </div>
 
 <script>
-    // --- Configuration ---
-    let MIN_PRICE = 0.0242;
-    let MAX_PRICE = 0.0248;
-    const NEWS_TARGET_PRICE = 0.0243; // ৬টার নিউজের টার্গেট
+    // --- Configuration (Price Range: 0.0452 - 0.0532) ---
+    let MIN_PRICE = 0.0452;
+    let MAX_PRICE = 0.0532;
+    const NEWS_TARGET_PRICE = 0.0520; // আপনি চাইলে এটি পরিবর্তন করতে পারেন
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 1763;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0245 ; 
+    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0485; 
     let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     let isNewsActive = false;
 
@@ -149,35 +149,33 @@
         const hours = now.getHours();
         const minutes = now.getMinutes();
 
-        // --- News System: 6:00 PM (18:00) ---
-        if (hours === 18 && minutes === 09 && !isNewsActive) {
+        // --- News System: BD Time 6:00 PM (18:00) ---
+        if (hours === 18 && minutes === 0 && !isNewsActive) {
             isNewsActive = true;
-            MIN_PRICE = 0.0240; // নতুন মিনিমাম রেঞ্জ
-            MAX_PRICE = 0.0248; // নতুন ম্যাক্সিমাম রেঞ্জ
+            // নিউজ চলাকালীন প্রাইস উপরের দিকে থাকবে
+            MIN_PRICE = 0.0510;
+            MAX_PRICE = 0.0532;
             showNotification("🚀 BREAKING NEWS: Massive Buy Order Initiated!");
             document.getElementById('normal-label').innerText = "🚨 HIGH IMPACT NEWS ACTIVE";
             document.getElementById('normal-label').style.color = successColor;
         }
 
-        let volatility = isNewsActive ? 0.00015 : 0.00005; 
+        let volatility = isNewsActive ? 0.0001 : 0.00005; 
         let change = (Math.random() * volatility);
         
         if (isNewsActive) {
-            // যদি ৬টা বেজে যায়, তবে প্রাইসকে ০.০২৪৩ এর দিকে ঠেলে দিবে
             if (currentLivePrice < NEWS_TARGET_PRICE) {
-                currentLivePrice += (change * 4); // দ্রুত পাম্প হবে
+                currentLivePrice += (change * 3);
             } else {
-                // টার্গেট প্রাইসে পৌঁছালে হালকা ওঠানামা করবে (স্টেবল)
                 if (Math.random() > 0.5) currentLivePrice += change;
                 else currentLivePrice -= change;
             }
         } else {
-            // নরমাল অবস্থায় সাধারণ মুভমেন্ট
             if (Math.random() > 0.48) currentLivePrice += change;
             else currentLivePrice -= change;
         }
 
-        // রেঞ্জ লক করা
+        // কঠোরভাবে রেঞ্জ লক করা (০.০৪৫২ - ০.০৫৩২)
         if (currentLivePrice < MIN_PRICE) currentLivePrice = MIN_PRICE;
         if (currentLivePrice > MAX_PRICE) currentLivePrice = MAX_PRICE;
 
@@ -207,8 +205,6 @@
         const totalValue = currentLivePrice * myAmount;
         document.getElementById('total-value').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
-        
-        // প্রাইস কালার গোল্ডেন রাখা হয়েছে বিন্যান্স স্টাইলে
         document.getElementById('current-price').style.color = "#f0b90b";
     }
 
