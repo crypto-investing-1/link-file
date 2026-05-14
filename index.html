@@ -118,19 +118,23 @@
 </div>
 
 <script>
-    // --- Configuration ---
-    let MIN_PRICE = 0.0452;
-    let MAX_PRICE = 0.0532;
-    const CRASH_MIN = 0.0132; 
-    const CRASH_MAX = 0.0163; 
+    // --- Configuration (আপনার চাহিদা অনুযায়ী প্রাইস রেঞ্জ সেট করা হয়েছে) ---
+    let MIN_PRICE = 0.0021;
+    let MAX_PRICE = 0.0041;
     const CANDLE_DURATION = 10000; 
 
     let myAmount = parseFloat(localStorage.getItem('ast_balance')) || 5917;
-    let currentLivePrice = parseFloat(localStorage.getItem('ast_last_price')) || 0.0485; 
-    let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
-    let isNewsActive = false;
-    let isCrashActive = false; 
+    
+    // রিফ্রেশ করলে যেন আগের স্টোর করা দাম থেকেই শুরু হয়, নয়তো নতুন রেঞ্জের মাঝে শুরু হবে
+    let storedPrice = localStorage.getItem('ast_last_price');
+    let currentLivePrice = storedPrice ? parseFloat(storedPrice) : 0.0031; 
+    
+    // যদি স্টোর করা দাম আপনার দেওয়া নতুন রেঞ্জের বাইরে থাকে, তবে রেঞ্জে ফিরিয়ে আনা
+    if (currentLivePrice < MIN_PRICE || currentLivePrice > MAX_PRICE) {
+        currentLivePrice = 0.0031;
+    }
 
+    let seriesData = JSON.parse(localStorage.getItem('ast_series')) || [];
     const successColor = '#00c076';
     const dangerColor = '#ff4040';
 
@@ -147,56 +151,28 @@
     });
     chart.render();
 
-    // অটোমেটিক ক্রাশ ফাংশন
-    function startAutoCrash() {
-        isCrashActive = true;
-        isNewsActive = false;
-        MIN_PRICE = CRASH_MIN; 
-        MAX_PRICE = CRASH_MAX;
-        
-        showNotification("🚨 ALERT: Massive Sell-off Detected! Market Dumping!");
-        document.getElementById('normal-label').innerText = "🚨 SELLING PANIC ACTIVE";
-        document.getElementById('normal-label').style.color = dangerColor;
-        document.getElementById('price-trend').className = "status-badge down";
-        document.getElementById('price-trend').innerText = "DUMPING";
-    }
-
     function updateMarket() {
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
 
-        // রাত ৮:৫৮ (২০:৫৮) মিনিটে ক্রাশ শুরু হবে
-        if (hours === 20 && minutes === 58 && !isCrashActive) {
-            startAutoCrash();
-        }
-
-        if (isCrashActive) {
-            if (currentLivePrice > CRASH_MAX) {
-                currentLivePrice -= 0.0020; 
-            } else {
-                let volatility = 0.0001;
-                let change = (Math.random() * volatility);
-                if (Math.random() > 0.5) currentLivePrice += change;
-                else currentLivePrice -= change;
-            }
-        } 
-        else if (hours === 18 && minutes === 0 && !isNewsActive) {
-            isNewsActive = true;
-            MIN_PRICE = 0.0510;
-            MAX_PRICE = 0.0532;
-            showNotification("🚀 BREAKING NEWS: Massive Buy Order Initiated!");
-            document.getElementById('normal-label').innerText = "🚨 HIGH IMPACT NEWS ACTIVE";
-            document.getElementById('normal-label').style.color = successColor;
-        }
-
-        if (!isCrashActive && !isNewsActive) {
-            let volatility = 0.00005; 
+        // রাত ৮:৫৮ (২০:৫৮) মিনিটে অটোমেটিক ক্রাশ/ড্রপ লজিক (আপনার আগের কোড অনুযায়ী)
+        if (hours === 20 && minutes === 58) {
+            currentLivePrice -= 0.0001;
+            document.getElementById('price-trend').innerText = "DUMPING";
+            document.getElementById('price-trend').className = "status-badge down";
+        } else {
+            // নরমাল অবস্থায় প্রাইস মুভমেন্ট
+            let volatility = 0.00008; 
             let change = (Math.random() * volatility);
             if (Math.random() > 0.48) currentLivePrice += change;
             else currentLivePrice -= change;
+            
+            document.getElementById('price-trend').innerText = "Market Active";
+            document.getElementById('price-trend').className = "status-badge up";
         }
 
+        // প্রাইস আপনার নির্ধারিত রেঞ্জের মধ্যে রাখা
         if (currentLivePrice < MIN_PRICE) currentLivePrice = MIN_PRICE;
         if (currentLivePrice > MAX_PRICE) currentLivePrice = MAX_PRICE;
 
@@ -226,9 +202,7 @@
         const totalValue = currentLivePrice * myAmount;
         document.getElementById('total-value').innerText = `$${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('balance-amount').innerText = `${myAmount.toFixed(2)} AST`;
-        
-        if(isCrashActive) document.getElementById('current-price').style.color = dangerColor;
-        else document.getElementById('current-price').style.color = "#f0b90b";
+        document.getElementById('current-price').style.color = "#f0b90b";
     }
 
     function executeTrade(type) {
